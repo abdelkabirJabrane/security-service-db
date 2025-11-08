@@ -26,7 +26,6 @@ public class KeyLoaderService {
     }
 
     private void loadKeys() throws Exception {
-        // Charger la clé publique depuis src/main/resources/keys/public.pem
         InputStream pubFile = new ClassPathResource("keys/public.pem").getInputStream();
         String pubKeyContent = new String(pubFile.readAllBytes())
                 .replaceAll("-----BEGIN PUBLIC KEY-----", "")
@@ -35,7 +34,6 @@ public class KeyLoaderService {
         X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(pubKeyContent));
         this.publicKey = KeyFactory.getInstance("RSA").generatePublic(pubKeySpec);
 
-        // Charger la clé privée depuis src/main/resources/keys/private.pem
         InputStream privFile = new ClassPathResource("keys/private.pem").getInputStream();
         String privKeyContent = new String(privFile.readAllBytes())
                 .replaceAll("-----BEGIN PRIVATE KEY-----", "")

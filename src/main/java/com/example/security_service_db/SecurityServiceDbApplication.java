@@ -28,118 +28,117 @@ import java.util.Set;
 
 public class SecurityServiceDbApplication {
 
-	public static void main(String[] args) {
+    public static void main(String[] args) {
 
-		SpringApplication.run(SecurityServiceDbApplication.class, args);
+        SpringApplication.run(SecurityServiceDbApplication.class, args);
 
-	}
+    }
 
-	@Bean
+    @Bean
+    CommandLineRunner init(UserRepository userRepository,
 
-	CommandLineRunner init(UserRepository userRepository,
+                           RoleRepository roleRepository,
 
-						   RoleRepository roleRepository,
+                           PasswordEncoder passwordEncoder) {
 
-						   PasswordEncoder passwordEncoder) {
+        return args -> {
 
-		return args -> {
+            // Check if admin already exists
 
-			// Check if admin already exists
+            Optional<User> existingAdmin = userRepository.findByUsername("admin");
 
-			Optional<User> existingAdmin = userRepository.findByUsername("admin");
+            if (existingAdmin.isEmpty()) {
 
-			if (existingAdmin.isEmpty()) {
+                // Create or get ADMIN role
 
-				// Create or get ADMIN role
+                Optional<Role> optAdminRole = Optional.ofNullable(roleRepository.findByRoleName("ROLE_ADMIN"));
 
-				Optional<Role> optAdminRole = Optional.ofNullable(roleRepository.findByRoleName("ROLE_ADMIN"));
+                Role adminRole;
 
-				Role adminRole;
+                if (optAdminRole.isPresent()) {
 
-				if (optAdminRole.isPresent()) {
+                    adminRole = optAdminRole.get();
 
-					adminRole = optAdminRole.get();
+                } else {
 
-				} else {
+                    adminRole = new Role();
 
-					adminRole = new Role();
+                    adminRole.setRoleName("ROLE_ADMIN");
 
-					adminRole.setRoleName("ROLE_ADMIN");
+                    adminRole = roleRepository.save(adminRole);
 
-					adminRole = roleRepository.save(adminRole);
+                }
 
-				}
+                // Create or get USER role
 
-				// Create or get USER role
+                Optional<Role> optUserRole = Optional.ofNullable(roleRepository.findByRoleName("ROLE_USER"));
 
-				Optional<Role> optUserRole = Optional.ofNullable(roleRepository.findByRoleName("ROLE_USER"));
+                Role userRole;
 
-				Role userRole;
+                if (optUserRole.isPresent()) {
 
-				if (optUserRole.isPresent()) {
+                    userRole = optUserRole.get();
 
-					userRole = optUserRole.get();
+                } else {
 
-				} else {
+                    userRole = new Role();
 
-					userRole = new Role();
+                    userRole.setRoleName("ROLE_USER");
 
-					userRole.setRoleName("ROLE_USER");
+                    userRole = roleRepository.save(userRole);
 
-					userRole = roleRepository.save(userRole);
+                }
 
-				}
+                // Create admin user
 
-				// Create admin user
+                User admin = new User();
 
-				User admin = new User();
+                admin.setUsername("admin");
 
-				admin.setUsername("admin");
+                admin.setPassword(passwordEncoder.encode("admin123"));
 
-				admin.setPassword(passwordEncoder.encode("admin123"));
+                admin.setEnabled(true);
 
-				admin.setEnabled(true);
+                Set<Role> adminRoles = new HashSet<>();
 
-				Set<Role> adminRoles = new HashSet<>();
+                adminRoles.add(adminRole);
 
-				adminRoles.add(adminRole);
+                adminRoles.add(userRole);
 
-				adminRoles.add(userRole);
+                admin.setRoles(adminRoles);
 
-				admin.setRoles(adminRoles);
+                userRepository.save(admin);
 
-				userRepository.save(admin);
+            }
 
-			}
+            Optional<User> existingUser = userRepository.findByUsername("user");
 
-			Optional<User> existingUser = userRepository.findByUsername("user");
+            if (existingUser.isEmpty()) {
 
-			if (existingUser.isEmpty()) {
+                // Create or get USER role
 
-				// Create or get USER role
+                Optional<Role> optUserRole = Optional.ofNullable(roleRepository.findByRoleName("ROLE_USER"));
 
-				Optional<Role> optUserRole = Optional.ofNullable(roleRepository.findByRoleName("ROLE_USER"));
+                User user = new User();
 
-				User user = new User();
+                user.setUsername("user");
 
-				user.setUsername("user");
+                user.setPassword(passwordEncoder.encode("user123"));
 
-				user.setPassword(passwordEncoder.encode("user123"));
+                user.setEnabled(true);
 
-				user.setEnabled(true);
+                Set<Role> userRoles = new HashSet<>();
 
-				Set<Role> userRoles = new HashSet<>();
+                userRoles.add(optUserRole.get());
 
-				userRoles.add(optUserRole.get());
+                user.setRoles(userRoles);
 
-				user.setRoles(userRoles);
+                userRepository.save(user);
 
-				userRepository.save(user);
+            }
 
-			}
+        };
 
-		};
-
-	}
+    }
 
 }

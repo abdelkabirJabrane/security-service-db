@@ -11,7 +11,7 @@ import java.util.HashSet;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "users") // éviter le conflit avec le mot-clé réservé "user" dans certaines BDD
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
